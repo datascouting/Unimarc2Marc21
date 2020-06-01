@@ -9,7 +9,6 @@ function getDefaultZ3950()
         "z3950_host" => "z3950.nlg.gr",
         "z3950_port" => "210",
         "z3950_database" => "biblios",
-        "z3950_value" => "",
         'z3950_type' => "ISBN (Preferred)"
     ];
 }
@@ -25,8 +24,6 @@ function getDefaultKoha()
         "koha_intra_basic_username" => "",
         "koha_intra_basic_password" => "",
         "koha_intra_username" => "",
-        "koha_intra_password" => "",
-        "koha_intra_value" => "",
-        "koha_intra_marc21_xml" => ""
+        "koha_intra_password" => ""
     ];
 }
