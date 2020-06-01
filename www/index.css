@@ -1,0 +1,16 @@
+body {
+    background-color: #555664;
+    color: white;
+}
+
+.footer-logo {
+    width: 256px;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.margin-10 {
+    margin: 10px;
+}

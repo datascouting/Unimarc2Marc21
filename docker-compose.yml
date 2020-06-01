@@ -1,0 +1,24 @@
+version: "3"
+
+services:
+  unimarc2marc21:
+    image: datasacouting/unimarc2marc21:latest
+    build:
+      dockerfile: ./Dockerfile
+      context: .
+      args:
+        TIMEZONE: ${TIMEZONE}
+        APP_UID: ${APP_UID}
+        APP_GID: ${APP_GID}
+        PHP_INI_PROFILE: ${PHP_INI_PROFILE}
+    container_name: unimarc2marc21-service
+    restart: unless-stopped
+    ports:
+      - ${HOST_PORT}:80
+    volumes:
+      - ./www:/var/www/html
+    environment:
+      LC_ALL: ${LC_ALL}
+      LANG: ${LANG}
+      LANGUAGE: ${LANGUAGE}
+      DEBIAN_FRONTEND: ${DEBIAN_FRONTEND}
