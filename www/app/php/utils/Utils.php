@@ -152,6 +152,11 @@ abstract class Utils
     public static function addDefaults($object, $values, $defaultValues)
     {
         foreach ($values as $value) {
+            if (!(isset($defaultValues[$value]))) {
+                $object[$value] = '';
+                continue;
+            }
+
             $object[$value] = $defaultValues[$value];
         }
 
