@@ -2,7 +2,7 @@ version: "3"
 
 services:
   unimarc2marc21:
-    image: datasacouting/unimarc2marc21:latest
+    image: datascouting/unimarc2marc21:latest
     build:
       dockerfile: ./Dockerfile
       context: .
