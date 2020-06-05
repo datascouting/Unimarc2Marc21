@@ -6,7 +6,7 @@ require_once APP_PHP_PATH . "/index_app.php";
 $objectOfRequest = $_POST;
 
 $z3950settingsArray = Utils::getZ3950Settings($objectOfRequest);
-$kohaSettingsArray = Utils::getKohaSettings($_POST);
+$kohaSettingsArray = Utils::getKohaSettings($objectOfRequest);
 
 if (Utils::areAllValuesEmpty($z3950settingsArray, Utils::getZ3950SupporterValues())) {
     $objectOfRequest = Utils::addDefaults($objectOfRequest, Utils::getZ3950SupporterValues(), getDefaultZ3950());
@@ -20,7 +20,7 @@ if (Utils::areAllValuesEmpty($kohaSettingsArray, Utils::getKohaSupportedValues()
 $z3950settings = Z3950::fromRequest($z3950settingsArray);
 $kohaSettings = Koha::fromRequest($kohaSettingsArray);
 
-$response = getResponse($_POST);
+$response = getResponse($objectOfRequest);
 
 $files = (mustHideObjects($response))
     ? new Files("", "", "")
@@ -72,6 +72,10 @@ $files = (mustHideObjects($response))
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="https://datascouting.com/" target="_blank">
                         DataScouting
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="https://github.com/datascouting/unimarc2marc21" target="_blank">
+                        GitHub Project
                     </a>
                 </div>
             </li>
