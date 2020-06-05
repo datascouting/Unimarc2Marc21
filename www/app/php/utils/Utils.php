@@ -131,7 +131,7 @@ abstract class Utils
      */
     public static function isSearchAndConvertRequest($object)
     {
-        return isset($object['z3950_value']);
+        return isset($object['z3950_value']) && ($object['z3950_value'] != '');
     }
 
     /**
@@ -140,7 +140,7 @@ abstract class Utils
      */
     public static function isImportToKohaRequest($object)
     {
-        return isset($object['koha_intra_value']);
+        return isset($object['koha_intra_value']) && ($object['koha_intra_value'] != '');
     }
 
     /**
