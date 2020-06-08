@@ -23,7 +23,7 @@ function getDefaultKoha()
         "koha_intra_port" => "80",
         "koha_intra_basic_username" => "",
         "koha_intra_basic_password" => "",
-        "koha_intra_username" => $_GET['username'],
-        "koha_intra_password" => $_GET['password']
+        "koha_intra_username" => isset($_GET['username']) ? $_GET['username'] : '',
+        "koha_intra_password" => isset($_GET['password']) ? $_GET['password'] : ''
     ];
 }
