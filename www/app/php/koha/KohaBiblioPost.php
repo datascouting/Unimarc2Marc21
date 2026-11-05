@@ -72,8 +72,6 @@ abstract class KohaBiblioPost
         $err = curl_error($curl);
         $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
-        curl_close($curl);
-
         if ($err) {
             throw new Exception($err);
         }

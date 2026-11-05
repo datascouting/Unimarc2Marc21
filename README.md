@@ -65,10 +65,10 @@ The `standalone` target bakes the application code into the image (no bind mount
 
 PHPUnit tests live in `./tests` and cover the PHP code under `./www`.
 
-* With Docker (same PHP 8.2 runtime as production):
+* With Docker (same PHP 8.5 runtime as production):
     * `docker build --target test -t unimarc2marc21:test .`
     * `docker run --rm unimarc2marc21:test`
-* Locally (PHP 8.2+ with the curl extension and Composer):
+* Locally (PHP 8.5+ with the curl extension and Composer):
     * `composer install`
     * `composer test`
 
