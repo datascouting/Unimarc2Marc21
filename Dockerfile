@@ -14,27 +14,26 @@ LABEL maintainer="Iordanis Kostelidis <ikostelidis@datascouting.com>" \
 ARG APP_UID=1000
 ARG APP_GID=1000
 ARG TIMEZONE=Europe/Athens
-ARG LOCALE=en_US.UTF-8
 ARG PHP_INI_PROFILE=production
 ARG DEBIAN_FRONTEND=noninteractive
 
-ENV LANG=${LOCALE} \
-    LANGUAGE=${LOCALE} \
-    LC_ALL=${LOCALE} \
+# C.UTF-8 ships with glibc, so no locales package is needed
+ENV LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
     TZ=${TIMEZONE}
 
-# System packages, locale, timezone, apache/php setup and application user in a single layer
-RUN apt-get update \
- && apt-get upgrade -y \
+# System packages, timezone, apache/php setup and application user in a single layer
+RUN printf '%s\n' \
+        'path-exclude=/usr/share/doc/*' \
+        'path-exclude=/usr/share/man/*' \
+        'path-exclude=/usr/share/info/*' \
+        > /etc/dpkg/dpkg.cfg.d/01-nodoc \
+ && apt-get update \
  && apt-get install -y --no-install-recommends \
-        locales \
         tzdata \
         yaz \
         xsltproc \
         libcap2-bin \
- # Generate only the required locale (instead of the ~250MB locales-all package) \
- && echo "${LOCALE} ${LOCALE#*.}" > /etc/locale.gen \
- && locale-gen \
  # Timezone (OS and PHP) \
  && ln -fs "/usr/share/zoneinfo/${TIMEZONE}" /etc/localtime \
  && echo "${TIMEZONE}" > /etc/timezone \

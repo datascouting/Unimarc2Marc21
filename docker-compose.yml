@@ -12,7 +12,6 @@ services:
         APP_UID: ${APP_UID:-1000}
         APP_GID: ${APP_GID:-1000}
         TIMEZONE: ${TIMEZONE:-Europe/Athens}
-        LOCALE: ${LOCALE:-en_US.UTF-8}
         PHP_INI_PROFILE: ${PHP_INI_PROFILE:-production}
     container_name: unimarc2marc21-service
     restart: unless-stopped

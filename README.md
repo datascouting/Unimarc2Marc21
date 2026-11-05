@@ -27,8 +27,6 @@ These instructions will get you a copy of the project up and running on your loc
         * Default: `80` (HTTP)
     * (OPTIONAL) Change the TIMEZONE
         * Default: `Europe/Athens`
-    * (OPTIONAL) Change the LOCALE
-        * Default: `en_US.UTF-8`
 * Edit the Defaults file `./www/commons/Defaults.php`
     * This file contains default Z39.50 server credentials/settings and default KOHA installation credentials  
         * Default Z39.50: `National Library of Greece`
