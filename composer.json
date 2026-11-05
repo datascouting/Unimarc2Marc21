@@ -10,6 +10,16 @@
     "require-dev": {
         "phpunit/phpunit": "^12.5"
     },
+    "autoload": {
+        "psr-4": {
+            "Unimarc2Marc21\\": "www/app/php/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Unimarc2Marc21\\Tests\\": "tests/"
+        }
+    },
     "config": {
         "platform": {
             "php": "8.5.12"

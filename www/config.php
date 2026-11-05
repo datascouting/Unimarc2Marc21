@@ -1,13 +1,12 @@
 <?php
 
-define("INSTALLATION_PATH", getcwd());
+declare(strict_types=1);
 
-define("LOAD_DEFAULTS_BY_DEFAULT", true);
+const INSTALLATION_PATH = __DIR__;
 
 require_once INSTALLATION_PATH . "/commons/AppPath.php";
+require_once APP_PHP_PATH . "/autoload.php";
 require_once INSTALLATION_PATH . "/commons/Storage.php";
 require_once INSTALLATION_PATH . "/commons/TransformTemplate.php";
-require_once INSTALLATION_PATH . "/commons/Z3950.php";
-require_once INSTALLATION_PATH . "/commons/Koha.php";
 require_once INSTALLATION_PATH . "/commons/Defaults.php";
 require_once INSTALLATION_PATH . "/commons/StatusCodes.php";

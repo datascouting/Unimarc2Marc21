@@ -1,10 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
 require __DIR__ . '/../vendor/autoload.php';
 
-// config.php derives INSTALLATION_PATH from the current working directory,
-// exactly like index.php does when served by apache from the document root.
-chdir(__DIR__ . '/../www');
-
+// Defines the constants and registers the app's own PSR-4 autoloader
 require_once __DIR__ . '/../www/config.php';
-require_once APP_PHP_PATH . '/index_app.php';

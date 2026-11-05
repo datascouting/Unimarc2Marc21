@@ -1,5 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
+namespace Unimarc2Marc21\Tests;
+
 use PHPUnit\Framework\TestCase;
 
 final class DefaultsTest extends TestCase
@@ -36,5 +40,12 @@ final class DefaultsTest extends TestCase
 
         $this->assertSame('librarian', $defaults['koha_intra_username']);
         $this->assertSame('secret', $defaults['koha_intra_password']);
+    }
+
+    public function testArrayQueryParamsAreIgnored(): void
+    {
+        $_GET['username'] = ['x'];
+
+        $this->assertSame('', getDefaultKoha()['koha_intra_username']);
     }
 }

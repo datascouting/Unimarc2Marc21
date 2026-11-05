@@ -1,14 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
+namespace Unimarc2Marc21\Tests\Enums;
+
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Unimarc2Marc21\Enums\QueryType;
 
 final class QueryTypeTest extends TestCase
 {
     #[DataProvider('typeProvider')]
-    public function testToQuery(string $type, string $expected): void
+    public function testAttribute(string $label, string $attribute): void
     {
-        $this->assertSame($expected, QueryType::toQuery($type));
+        $this->assertSame($attribute, QueryType::from($label)->attribute());
     }
 
     public static function typeProvider(): array
@@ -20,8 +25,13 @@ final class QueryTypeTest extends TestCase
         ];
     }
 
+    public function testUnknownTypeIsRejected(): void
+    {
+        $this->assertNull(QueryType::tryFrom('Author'));
+    }
+
     public function testDefaultZ3950TypeIsSupported(): void
     {
-        $this->assertArrayHasKey(getDefaultZ3950()['z3950_type'], QueryType::getTypes());
+        $this->assertNotNull(QueryType::tryFrom(getDefaultZ3950()['z3950_type']));
     }
 }

@@ -1,6 +1,8 @@
 <?php
 
-define("STORAGE", INSTALLATION_PATH . "/storage");
-define("STORAGE_INPUT", STORAGE . "/input");
-define("STORAGE_OUTPUT", STORAGE . "/output");
-define("STORAGE_PERSISTENT", STORAGE . "/persistent");
+declare(strict_types=1);
+
+const STORAGE = INSTALLATION_PATH . "/storage";
+const STORAGE_INPUT = STORAGE . "/input";
+const STORAGE_OUTPUT = STORAGE . "/output";
+const STORAGE_PERSISTENT = STORAGE . "/persistent";

@@ -1,30 +1,34 @@
 <?php
 
-require_once "./config.php";
-require_once APP_PHP_PATH . "/index_app.php";
+declare(strict_types=1);
 
-$objectOfRequest = $_POST;
+use Unimarc2Marc21\App\RequestHandler;
+use Unimarc2Marc21\App\View;
+use Unimarc2Marc21\Enums\QueryType;
+use Unimarc2Marc21\Models\Files;
+use Unimarc2Marc21\Models\Koha;
+use Unimarc2Marc21\Models\Z3950;
+use Unimarc2Marc21\Utils\Utils;
 
-$z3950settingsArray = Utils::getZ3950Settings($objectOfRequest);
-$kohaSettingsArray = Utils::getKohaSettings($objectOfRequest);
+require_once __DIR__ . "/config.php";
 
-if (Utils::areAllValuesEmpty($z3950settingsArray, Utils::getZ3950SupporterValues())) {
-    $objectOfRequest = Utils::addDefaults($objectOfRequest, Utils::getZ3950SupporterValues(), getDefaultZ3950());
-    $z3950settingsArray = Utils::getZ3950Settings($objectOfRequest);
+$request = $_POST;
+
+if (Utils::areAllValuesEmpty(Utils::getZ3950Settings($request), Utils::getZ3950SupportedValues())) {
+    $request = Utils::addDefaults($request, Utils::getZ3950SupportedValues(), getDefaultZ3950());
 }
-if (Utils::areAllValuesEmpty($kohaSettingsArray, Utils::getKohaSupportedValues())) {
-    $objectOfRequest = Utils::addDefaults($objectOfRequest, Utils::getKohaSupportedValues(), getDefaultKoha());
-    $kohaSettingsArray = Utils::getKohaSettings($objectOfRequest);
+if (Utils::areAllValuesEmpty(Utils::getKohaSettings($request), Utils::getKohaSupportedValues())) {
+    $request = Utils::addDefaults($request, Utils::getKohaSupportedValues(), getDefaultKoha());
 }
 
-$z3950settings = Z3950::fromRequest($z3950settingsArray);
-$kohaSettings = Koha::fromRequest($kohaSettingsArray);
+$z3950settings = Z3950::fromRequest($request);
+$kohaSettings = Koha::fromRequest($request);
 
-$response = getResponse($objectOfRequest);
+$response = RequestHandler::handle($request);
 
-$files = (mustHideObjects($response))
-    ? new Files("", "", "")
-    : Files::fromvalue($response->getValue());
+$files = View::mustHideObjects($response)
+    ? Files::none()
+    : Files::fromValue($response->getValue());
 
 ?>
 
@@ -104,7 +108,7 @@ $files = (mustHideObjects($response))
     <div class="row">
         <div class="col-12">
             <div class="alert alert-primary text-center">
-                <?php echo $response->getMessage(); ?>
+                <?= View::e($response->getMessage()) ?>
             </div>
         </div>
     </div>
@@ -121,7 +125,7 @@ $files = (mustHideObjects($response))
             <div class="row">
 
                 <div class="form-row">
-                    <div class="col <?php echo getHideClassOrEmpty($response) ?>">
+                    <div class="col <?= View::e(View::getHideClassOrEmpty($response)) ?>">
                         <form method="post">
 
                             <div class="form-group">
@@ -133,34 +137,34 @@ $files = (mustHideObjects($response))
                                 <label for="koha_intra_host">Host</label>
                                 <input type="text" class="form-control" id="koha_intra_host" name="koha_intra_host"
                                        placeholder="eg koha-intra.koha.gr"
-                                       value="<?php echo $kohaSettings->getHost() ?>">
+                                       value="<?= View::e($kohaSettings->getHost()) ?>">
                             </div>
                             <div class="form-group">
                                 <label for="koha_intra_port">Port</label>
                                 <input type="text" class="form-control" id="koha_intra_port" name="koha_intra_port"
                                        placeholder="eg 1234"
-                                       value="<?php echo $kohaSettings->getPort() ?>">
+                                       value="<?= View::e($kohaSettings->getPort()) ?>">
                             </div>
                             <div class="form-group">
                                 <label for="koha_intra_basic_username">Basic Auth Username</label>
                                 <input type="text" class="form-control" id="koha_intra_basic_username"
                                        name="koha_intra_basic_username"
                                        placeholder="eg basicuser"
-                                       value="<?php echo $kohaSettings->getBasicAuthUsername() ?>">
+                                       value="<?= View::e($kohaSettings->getBasicAuthUsername()) ?>">
                             </div>
                             <div class="form-group">
                                 <label for="koha_intra_basic_password">Basic Auth Password</label>
                                 <input type="password" class="form-control" id="koha_intra_basic_password"
                                        name="koha_intra_basic_password"
                                        placeholder="eg basicpass"
-                                       value="<?php echo $kohaSettings->getBasicAuthPassword() ?>">
+                                       value="<?= View::e($kohaSettings->getBasicAuthPassword()) ?>">
                             </div>
                             <div class="form-group">
                                 <label for="koha_intra_username">Username</label>
                                 <input type="text" class="form-control" id="koha_intra_username"
                                        name="koha_intra_username"
                                        placeholder="eg admin"
-                                       value="<?php echo $kohaSettings->getUsername() ?>">
+                                       value="<?= View::e($kohaSettings->getUsername()) ?>">
                             </div>
 
                             <div class="form-group">
@@ -168,15 +172,15 @@ $files = (mustHideObjects($response))
                                 <input type="password" class="form-control" id="koha_intra_password"
                                        name="koha_intra_password"
                                        placeholder="eg adminpass"
-                                       value="<?php echo $kohaSettings->getPassword() ?>">
+                                       value="<?= View::e($kohaSettings->getPassword()) ?>">
                             </div>
 
                             <div class="form-group">
                                 <label for="koha_intra_value">Value</label>
                                 <input type="text" class="form-control" id="koha_intra_value"
                                        name="koha_intra_value"
-                                       placeholder="<?php echo $z3950settingsArray['z3950_value']; ?>"
-                                       value="<?php echo $files->getValue(); ?>" readonly>
+                                       placeholder="<?= View::e($z3950settings->getValue()) ?>"
+                                       value="<?= View::e($files->getValue()) ?>" readonly>
                             </div>
 
                             <div class="form-group margin-10">
@@ -200,20 +204,20 @@ $files = (mustHideObjects($response))
                                 <label for="z3950_host">Z39/50 Host</label>
                                 <input type="text" class="form-control" id="z3950_host" name="z3950_host"
                                        placeholder="eg z3950.nlg.gr"
-                                       value="<?php echo $z3950settings->getHost() ?>">
+                                       value="<?= View::e($z3950settings->getHost()) ?>">
                             </div>
                             <div class="form-group">
                                 <label for="z3950_port">Z39/50 Port</label>
                                 <input type="number" class="form-control" id="z3950_port" name="z3950_port"
                                        placeholder="eg 210"
-                                       value="<?php echo $z3950settings->getPort() ?>">
+                                       value="<?= View::e($z3950settings->getPort()) ?>">
                             </div>
 
                             <div class="form-group">
                                 <label for="z3950_database">Z39/50 Database</label>
                                 <input type="text" class="form-control" id="z3950_database" name="z3950_database"
                                        placeholder="eg biblios"
-                                       value="<?php echo $z3950settings->getDatabase() ?>">
+                                       value="<?= View::e($z3950settings->getDatabase()) ?>">
                             </div>
 
                             <div class="form-group">
@@ -225,21 +229,15 @@ $files = (mustHideObjects($response))
                                 <label for="z3950_value">Value to Find</label>
                                 <input type="text" class="form-control" id="z3950_value" name="z3950_value"
                                        placeholder="eg 978-960-044-259-5"
-                                       value="<?php echo $files->getValue(); ?>">
+                                       value="<?= View::e($files->getValue()) ?>">
                             </div>
 
                             <div class="form-group">
                                 <label for="z3950_type">Type of Value to Find</label>
                                 <select class="form-control" id="z3950_type" name="z3950_type">
-                                    <?php
-                                    foreach (QueryType::getTypes() as $key => $value) {
-                                        echo sprintf(
-                                            "<option %s>%s</option>",
-                                            ($z3950settings->getType() == $key) ? "selected" : "",
-                                            $key
-                                        );
-                                    }
-                                    ?>
+                                    <?php foreach (QueryType::cases() as $queryType): ?>
+                                        <option value="<?= View::e($queryType->value) ?>"<?= $z3950settings->getQueryType() === $queryType ? ' selected' : '' ?>><?= View::e($queryType->value) ?></option>
+                                    <?php endforeach; ?>
                                 </select>
                             </div>
 
@@ -255,7 +253,7 @@ $files = (mustHideObjects($response))
                 </div>
 
             </div>
-            <div class="row <?php echo getHideClassOrEmpty($response); ?>" style="margin-left: -20px;">
+            <div class="row <?= View::e(View::getHideClassOrEmpty($response)) ?>" style="margin-left: -20px;">
                 <div class="btn-group">
                     <a target="_blank"
                        class="btn btn-primary disabled">
@@ -263,19 +261,19 @@ $files = (mustHideObjects($response))
                         Download as:
                     </a>
                     <a target="_blank"
-                       href="<?php echo Utils::getRelatedFilePath(INSTALLATION_PATH, $files->getXml()); ?>"
+                       href="<?= View::e(Utils::toUrlPath(Utils::getRelatedFilePath(INSTALLATION_PATH, $files->getXml()))) ?>"
                        class="btn btn-success">
                         MARC21XML
                     </a>
                     <a target="_blank"
-                       href="<?php echo Utils::getRelatedFilePath(INSTALLATION_PATH, $files->getMrc()); ?>"
+                       href="<?= View::e(Utils::toUrlPath(Utils::getRelatedFilePath(INSTALLATION_PATH, $files->getMrc()))) ?>"
                        class="btn btn-success">
                         MARC21MRC
                     </a>
                 </div>
             </div>
         </div>
-        <div class="col-md-6 <?php echo getHideClassOrEmpty($response); ?>">
+        <div class="col-md-6 <?= View::e(View::getHideClassOrEmpty($response)) ?>">
             <div class="row">
                 <div class="h2">
                     Preview MARC21 XML
@@ -284,7 +282,7 @@ $files = (mustHideObjects($response))
             <div class="row">
                 <label style="width: 100%">
                     <textarea style="width: 100%; height: 32em" readonly>
-                        <?php echo $files->getXmlContents(); ?>
+                        <?= View::e($files->getXmlContents()) ?>
                     </textarea>
                 </label>
             </div>

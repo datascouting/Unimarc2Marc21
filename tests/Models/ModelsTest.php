@@ -1,6 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
+namespace Unimarc2Marc21\Tests\Models;
+
 use PHPUnit\Framework\TestCase;
+use Unimarc2Marc21\Enums\QueryType;
+use Unimarc2Marc21\Models\Files;
+use Unimarc2Marc21\Models\Koha;
+use Unimarc2Marc21\Models\Response;
+use Unimarc2Marc21\Models\Z3950;
 
 final class ModelsTest extends TestCase
 {
@@ -19,20 +28,16 @@ final class ModelsTest extends TestCase
         $this->assertSame('db', $z3950->getDatabase());
         $this->assertSame('123', $z3950->getValue());
         $this->assertSame('ISSN', $z3950->getType());
+        $this->assertSame(QueryType::Issn, $z3950->getQueryType());
     }
 
-    public function testZ3950Setters(): void
+    public function testZ3950FromIncompleteRequestDoesNotCrash(): void
     {
-        $z3950 = new Z3950('', '', '', '', '');
-        $z3950->setHost('h');
-        $z3950->setPort('p');
-        $z3950->setDatabase('d');
-        $z3950->setValue('v');
-        $z3950->setType('t');
+        $z3950 = Z3950::fromRequest(['z3950_value' => ['not', 'a', 'string']]);
 
-        $this->assertSame(['h', 'p', 'd', 'v', 't'], [
-            $z3950->getHost(), $z3950->getPort(), $z3950->getDatabase(), $z3950->getValue(), $z3950->getType(),
-        ]);
+        $this->assertSame('', $z3950->getValue());
+        $this->assertSame('', $z3950->getHost());
+        $this->assertNull($z3950->getQueryType());
     }
 
     public function testKohaFromRequest(): void
@@ -56,15 +61,26 @@ final class ModelsTest extends TestCase
         $this->assertSame('123', $koha->getValue());
     }
 
-    public function testResponseFactories(): void
+    public function testKohaFromIncompleteRequestDoesNotCrash(): void
     {
-        $response = Response::withvalue(STATUS_SEARCH_OK, 'ok', '123');
+        $koha = Koha::fromRequest(['koha_intra_value' => '123']);
+
+        $this->assertSame('123', $koha->getValue());
+        $this->assertSame('', $koha->getHost());
+    }
+
+    public function testResponse(): void
+    {
+        $waiting = new Response(STATUS_WAIT, 'waiting');
+        $this->assertSame('', $waiting->getValue());
+        $this->assertNull($waiting->getXml());
+
+        $response = Response::withValue(STATUS_SEARCH_OK, 'ok', '123');
         $this->assertSame(STATUS_SEARCH_OK, $response->getStatusCode());
         $this->assertSame('ok', $response->getMessage());
         $this->assertSame('123', $response->getValue());
-        $this->assertNull($response->getXml());
 
-        $response = Response::withvalueAndXML(STATUS_IMPORT_OK, 'imported', '123', '<xml/>');
+        $response = Response::withValueAndXml(STATUS_IMPORT_OK, 'imported', '123', '<xml/>');
         $this->assertSame(STATUS_IMPORT_OK, $response->getStatusCode());
         $this->assertSame('123', $response->getValue());
         $this->assertSame('<xml/>', $response->getXml());
@@ -72,11 +88,27 @@ final class ModelsTest extends TestCase
 
     public function testFilesFromValueBuildsOutputPaths(): void
     {
-        $files = Files::fromvalue('123');
+        $files = Files::fromValue('978-960-044-259-5');
 
-        $this->assertSame('123', $files->getValue());
-        $this->assertSame(STORAGE_OUTPUT . '/123.mrc.marc21.xml', $files->getXml());
-        $this->assertSame(STORAGE_OUTPUT . '/123.mrc.marc21.mrc', $files->getMrc());
+        $this->assertSame('978-960-044-259-5', $files->getValue());
+        $this->assertSame(STORAGE_OUTPUT . '/978-960-044-259-5.mrc.marc21.xml', $files->getXml());
+        $this->assertSame(STORAGE_OUTPUT . '/978-960-044-259-5.mrc.marc21.mrc', $files->getMrc());
+    }
+
+    public function testFilesFromValueStaysInsideOutputStorage(): void
+    {
+        $files = Files::fromValue('../../config.php');
+
+        $this->assertSame(STORAGE_OUTPUT, dirname($files->getXml()));
+        $this->assertSame(STORAGE_OUTPUT, dirname($files->getMrc()));
+    }
+
+    public function testNoFiles(): void
+    {
+        $files = Files::none();
+
+        $this->assertFalse($files->existsBoth());
+        $this->assertSame('', $files->getXmlContents());
     }
 
     public function testFilesExistsBothAndXmlContents(): void
