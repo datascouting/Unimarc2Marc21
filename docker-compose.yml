@@ -1,24 +1,22 @@
-version: "3"
+# Development: application code is bind-mounted from ./www
+# Usage: docker compose up -d
+# For the self-contained image see docker-compose.standalone.yml
 
 services:
   unimarc2marc21:
-    image: datascouting/unimarc2marc21:latest
+    image: datascouting/unimarc2marc21:base
     build:
-      dockerfile: ./Dockerfile
       context: .
+      target: base
       args:
-        TIMEZONE: ${TIMEZONE}
-        APP_UID: ${APP_UID}
-        APP_GID: ${APP_GID}
-        PHP_INI_PROFILE: ${PHP_INI_PROFILE}
+        APP_UID: ${APP_UID:-1000}
+        APP_GID: ${APP_GID:-1000}
+        TIMEZONE: ${TIMEZONE:-Europe/Athens}
+        LOCALE: ${LOCALE:-en_US.UTF-8}
+        PHP_INI_PROFILE: ${PHP_INI_PROFILE:-production}
     container_name: unimarc2marc21-service
     restart: unless-stopped
     ports:
-      - ${HOST_PORT}:80
+      - "${HOST_PORT:-80}:80"
     volumes:
       - ./www:/var/www/html
-    environment:
-      LC_ALL: ${LC_ALL}
-      LANG: ${LANG}
-      LANGUAGE: ${LANGUAGE}
-      DEBIAN_FRONTEND: ${DEBIAN_FRONTEND}
