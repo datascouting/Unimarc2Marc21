@@ -1,0 +1,19 @@
+# Standalone: application code is baked into the image (for third-party applications)
+# Usage: docker compose -f docker-compose.standalone.yml up -d --build
+
+services:
+  unimarc2marc21:
+    image: datascouting/unimarc2marc21:latest
+    build:
+      context: .
+      target: standalone
+      args:
+        APP_UID: ${APP_UID:-1000}
+        APP_GID: ${APP_GID:-1000}
+        TIMEZONE: ${TIMEZONE:-Europe/Athens}
+        LOCALE: ${LOCALE:-en_US.UTF-8}
+        PHP_INI_PROFILE: ${PHP_INI_PROFILE:-production}
+    container_name: unimarc2marc21-standalone
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-80}:80"

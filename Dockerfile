@@ -1,45 +1,65 @@
-FROM php:7.4-apache
-MAINTAINER "Iordanis Kostelidis <ikostelidis@datascouting.com>"
+# syntax=docker/dockerfile:1
+
+# Targets:
+#   base        runtime only, application code is bind-mounted (used by docker-compose)
+#   standalone  runtime + application code baked in (default target, for third-party use)
+
+FROM php:8.2.35-apache AS base
+
+LABEL maintainer="Iordanis Kostelidis <ikostelidis@datascouting.com>" \
+      org.opencontainers.image.title="unimarc2marc21" \
+      org.opencontainers.image.source="https://github.com/datascouting/Unimarc2Marc21" \
+      org.opencontainers.image.licenses="MIT"
 
 ARG APP_UID=1000
 ARG APP_GID=1000
-
 ARG TIMEZONE=Europe/Athens
-
-ENV LC_ALL=en_US.UTF-8
-ENV LANG=en_US.UTF-8
-ENV LANGUAGE=en_US.UTF-8
-
-ENV DEBIAN_FRONTEND=noninteractive
+ARG LOCALE=en_US.UTF-8
 ARG PHP_INI_PROFILE=production
+ARG DEBIAN_FRONTEND=noninteractive
 
-# Update the base image, set timezone and locales
-RUN apt-get update && apt-get upgrade -y \
- && apt-get -y install apt-utils \
- && apt-get -y install tzdata \
- && ln -fs /usr/share/zoneinfo/${TIMEZONE} /etc/localtime \
- && dpkg-reconfigure --frontend noninteractive tzdata \
- && apt-get install -y locales locales-all
+ENV LANG=${LOCALE} \
+    LANGUAGE=${LOCALE} \
+    LC_ALL=${LOCALE} \
+    TZ=${TIMEZONE}
 
-# Install libcap (we need it to allow apache bind 80 port without root)
-RUN apt-get -y install libcap2 libcap2-bin
-
-# Install application dependencies
-RUN apt-get -y install yaz xsltproc
-
-# Clean up
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Setup apache and php
-RUN setcap 'cap_net_bind_service=+ep' /usr/sbin/apache2 \
+# System packages, locale, timezone, apache/php setup and application user in a single layer
+RUN apt-get update \
+ && apt-get upgrade -y \
+ && apt-get install -y --no-install-recommends \
+        locales \
+        tzdata \
+        yaz \
+        xsltproc \
+        libcap2-bin \
+ # Generate only the required locale (instead of the ~250MB locales-all package) \
+ && echo "${LOCALE} ${LOCALE#*.}" > /etc/locale.gen \
+ && locale-gen \
+ # Timezone (OS and PHP) \
+ && ln -fs "/usr/share/zoneinfo/${TIMEZONE}" /etc/localtime \
+ && echo "${TIMEZONE}" > /etc/timezone \
+ && printf 'date.timezone = "%s"\n' "${TIMEZONE}" > /usr/local/etc/php/conf.d/timezone.ini \
+ # Allow apache to bind port 80 without root, then drop the tooling \
+ && setcap 'cap_net_bind_service=+ep' /usr/sbin/apache2 \
+ && apt-get purge -y --auto-remove libcap2-bin \
  && a2enmod rewrite \
- && service apache2 restart \
- && cp /usr/local/etc/php/php.ini-${PHP_INI_PROFILE} /usr/local/etc/php/php.ini
+ && cp "/usr/local/etc/php/php.ini-${PHP_INI_PROFILE}" /usr/local/etc/php/php.ini \
+ # Application user (-o tolerates ids that already exist in the image) \
+ && groupadd -o -g "${APP_GID}" unimarc2marc21 \
+ && useradd -o -l -m -s /bin/bash -u "${APP_UID}" -g unimarc2marc21 unimarc2marc21 \
+ && usermod -a -G unimarc2marc21 www-data \
+ # Clean up \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* /tmp/* /var/tmp/*
 
-# Create application user
-RUN groupadd -g "${APP_GID}" unimarc2marc21 \
- && useradd -u "${APP_UID}" -ms /bin/bash -g unimarc2marc21 unimarc2marc21 \
- && usermod -a -G unimarc2marc21 www-data
-
-# Change default user
 USER unimarc2marc21
+
+EXPOSE 80
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -fsS -o /dev/null http://localhost/index.css || exit 1
+
+
+FROM base AS standalone
+
+COPY --chown=unimarc2marc21:www-data ./www /var/www/html

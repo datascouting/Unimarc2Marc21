@@ -1,0 +1,6 @@
+**
+
+!www/
+www/storage/input/*
+www/storage/output/*
+!www/storage/**/.gitignore

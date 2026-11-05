@@ -27,12 +27,21 @@ These instructions will get you a copy of the project up and running on your loc
         * Default: `80` (HTTP)
     * (OPTIONAL) Change the TIMEZONE
         * Default: `Europe/Athens`
+    * (OPTIONAL) Change the LOCALE
+        * Default: `en_US.UTF-8`
 * Edit the Defaults file `./www/commons/Defaults.php`
     * This file contains default Z39.50 server credentials/settings and default KOHA installation credentials  
         * Default Z39.50: `National Library of Greece`
         * Default KOHA: `None`
-* Build the docker image `docker-compose build`
-* Start the docker container `docker-compose up -d`
+* Build the docker image `docker compose build`
+* Start the docker container `docker compose up -d`
+
+### Standalone Image (for third-party applications)
+
+The `standalone` target bakes the application code into the image (no bind mount needed):
+
+* With compose: `docker compose -f docker-compose.standalone.yml up -d --build`
+* With plain docker: `docker build -t datascouting/unimarc2marc21:latest .` (`standalone` is the default target)
 
 ### Defaults File Fields
 #### Default Z39.50
