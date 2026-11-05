@@ -4,3 +4,9 @@
 www/storage/input/*
 www/storage/output/*
 !www/storage/**/.gitignore
+
+# Test stage only (never copied into the base/standalone images)
+!composer.json
+!composer.lock
+!phpunit.xml.dist
+!tests/

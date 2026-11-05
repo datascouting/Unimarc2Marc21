@@ -1,2 +1,5 @@
 .idea
 .env
+
+vendor
+.phpunit.cache

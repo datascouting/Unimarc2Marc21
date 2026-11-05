@@ -10,7 +10,7 @@ abstract class CommandRunner
     {
         ob_start();
         system($commandToRun, $statusCode);
-        ob_clean();
+        ob_end_clean();
 
         if ($statusCode === 0) {
             return STATUS_SEARCH_OK;

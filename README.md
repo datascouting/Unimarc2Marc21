@@ -38,7 +38,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Standalone Image (for third-party applications)
 
-The `standalone` target bakes the application code into the image (no bind mount needed):
+The `standalone` target bakes the application code into the image (no bind mount needed). The PHPUnit suite runs as part of every standalone build, and a failing test fails the build:
 
 * With compose: `docker compose -f docker-compose.standalone.yml up -d --build`
 * With plain docker: `docker build -t datascouting/unimarc2marc21:latest .` (`standalone` is the default target)
@@ -60,6 +60,17 @@ The `standalone` target bakes the application code into the image (no bind mount
 * `koha_intra_basic_password` - The Koha Intra basic auth password `OPTIONAL`
 * `koha_intra_username` - The Koha Intra username `REQUIRED`
 * `koha_intra_password` - The Koha Intra password`REQUIRED`
+
+## Running the Tests
+
+PHPUnit tests live in `./tests` and cover the PHP code under `./www`.
+
+* With Docker (same PHP 8.2 runtime as production):
+    * `docker build --target test -t unimarc2marc21:test .`
+    * `docker run --rm unimarc2marc21:test`
+* Locally (PHP 8.2+ with the curl extension and Composer):
+    * `composer install`
+    * `composer test`
 
 ## Built With
 

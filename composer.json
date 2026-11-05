@@ -1,0 +1,22 @@
+{
+    "name": "datascouting/unimarc2marc21",
+    "description": "Z39.50 fetch, Unimarc to Marc21 transformation and Koha upload",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.2",
+        "ext-curl": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.5"
+    },
+    "config": {
+        "platform": {
+            "php": "8.2.35"
+        },
+        "sort-packages": true
+    },
+    "scripts": {
+        "test": "phpunit"
+    }
+}

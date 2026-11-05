@@ -60,6 +60,43 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD curl -fsS -o /dev/null http://localhost/index.css || exit 1
 
 
+# PHPUnit test runner on the same PHP/runtime as production
+# Usage: docker build --target test -t unimarc2marc21:test . && docker run --rm unimarc2marc21:test
+FROM base AS test
+
+USER root
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends unzip \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /app
+RUN chown unimarc2marc21:unimarc2marc21 /app
+
+USER unimarc2marc21
+
+COPY --chown=unimarc2marc21:unimarc2marc21 composer.json composer.lock* ./
+RUN composer install --no-interaction --no-progress --prefer-dist
+
+COPY --chown=unimarc2marc21:unimarc2marc21 phpunit.xml.dist ./
+COPY --chown=unimarc2marc21:unimarc2marc21 tests ./tests
+COPY --chown=unimarc2marc21:unimarc2marc21 www ./www
+
+# Run the suite at build time; a failing test fails the build.
+# The marker file is what the standalone stage depends on.
+RUN vendor/bin/phpunit && touch /app/.tests-passed
+
+HEALTHCHECK NONE
+CMD ["vendor/bin/phpunit"]
+
+
 FROM base AS standalone
+
+# Force the test stage to run (BuildKit skips stages nothing depends on).
+# The bind mount adds no files or layers to the final image.
+RUN --mount=type=bind,from=test,source=/app/.tests-passed,target=/tmp/.tests-passed true
 
 COPY --chown=unimarc2marc21:www-data ./www /var/www/html
