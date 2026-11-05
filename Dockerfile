@@ -4,7 +4,7 @@
 #   base        runtime only, application code is bind-mounted (used by docker-compose)
 #   standalone  runtime + application code baked in (default target, for third-party use)
 
-FROM php:8.2.35-apache AS base
+FROM php:8.5.11-apache AS base
 
 LABEL maintainer="Iordanis Kostelidis <ikostelidis@datascouting.com>" \
       org.opencontainers.image.title="unimarc2marc21" \
