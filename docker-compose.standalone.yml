@@ -1,9 +1,10 @@
 # Standalone: application code is baked into the image (for third-party applications)
-# Usage: docker compose -f docker-compose.standalone.yml up -d --build
+# Usage (prebuilt): docker compose -f docker-compose.standalone.yml pull && docker compose -f docker-compose.standalone.yml up -d
+# Usage (local):    docker compose -f docker-compose.standalone.yml up -d --build
 
 services:
   unimarc2marc21:
-    image: datascouting/unimarc2marc21:latest
+    image: ghcr.io/datascouting/unimarc2marc21:latest
     build:
       context: .
       target: standalone

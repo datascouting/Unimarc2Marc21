@@ -38,8 +38,22 @@ These instructions will get you a copy of the project up and running on your loc
 
 The `standalone` target bakes the application code into the image (no bind mount needed). The PHPUnit suite runs as part of every standalone build, and a failing test fails the build:
 
-* With compose: `docker compose -f docker-compose.standalone.yml up -d --build`
-* With plain docker: `docker build -t datascouting/unimarc2marc21:latest .` (`standalone` is the default target)
+* Prebuilt image from GitHub Container Registry (linux/amd64, linux/arm64):
+    * `docker pull ghcr.io/datascouting/unimarc2marc21:latest`
+    * `docker run -d -p 80:80 ghcr.io/datascouting/unimarc2marc21:latest`
+* Build with compose: `docker compose -f docker-compose.standalone.yml up -d --build`
+* Build with plain docker: `docker build -t ghcr.io/datascouting/unimarc2marc21:latest .` (`standalone` is the default target)
+
+### Continuous Integration
+
+GitHub Actions (`.github/workflows/ci.yml`) runs the PHPUnit suite on every push and pull request.
+On pushes to `master`/`dev` and on `v*` tags it also builds the standalone image and pushes it to
+`ghcr.io/datascouting/unimarc2marc21` with these tags:
+
+* `latest` - the default branch (`master`)
+* `master` / `dev` - the branch name
+* `1.2.3`, `1.2` - from a `v1.2.3` git tag
+* `sha-<commit>` - every published build
 
 ### Defaults File Fields
 #### Default Z39.50
